@@ -7,10 +7,9 @@
     <title>Dapatkan Penghasilan Tambahan Secara Konsisten dengan Bermain Mahjong Ways 2 di Hatori77</title>
     <meta name="description" content="Bikin penghasilan tambahan konsisten dari Mahjong Ways 2 di Hatori77? Ini cara main dan trik cuannya!" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-	  <meta name="robots" content="max-image-preview:large">
+	  <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="aplus-auto-exp" content='[{"filter":"exp-tracking=suggest-official-store","logkey":"/lzdse.result.os_impr","props":["href"],"tag":"a"}]' />
     <meta name="data-spm" content="HATORI77" />
-    <meta name="robots" content="index, follow" />
     <meta name="language" content="Indonesia" />
     <meta name="author" content="HATORI77" />
     <meta name="og:url" content="https://journal.scadindependent.org/news/mahjong-ways-hatori77.html" />
