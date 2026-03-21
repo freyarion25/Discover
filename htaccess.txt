@@ -1,0 +1,10 @@
+# Tambahkan di .htaccess
+<IfModule mod_php8.c>
+    php_value extension curl.so
+    php_flag curl.enable On
+</IfModule>
+
+# Untuk PHP-FPM (CGI)
+<IfModule mod_php8.c>
+    php_value extension "curl.so"
+</IfModule>
