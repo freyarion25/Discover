@@ -1,0 +1,32 @@
+<?php
+echo "========== INFORMASI PHP ==========<br>";
+echo "Version PHP: " . phpversion() . "<br><br>";
+
+echo "========== CEK FUNGSI YANG DINONAKTIFKAN ==========<br>";
+$disabled = ini_get('disable_functions');
+if (empty($disabled)) {
+    echo "Tidak ada fungsi yang dinonaktifkan.<br>";
+} else {
+    echo "Fungsi yang dinonaktifkan: <br>";
+    $functions = explode(',', $disabled);
+    foreach ($functions as $func) {
+        echo "- " . trim($func) . "<br>";
+    }
+}
+
+echo "<br>========== CEK FUNGSI KHUSUS UNTUK CLOAKING ==========<br>";
+$required_functions = ['wp_remote_get', 'file_get_contents', 'curl_init', 'stream_context_create', 'shell_exec', 'exec', 'system', 'passthru'];
+
+foreach ($required_functions as $func) {
+    if (function_exists($func)) {
+        echo "✅ Fungsi $func TERSEDIA.<br>";
+    } else {
+        // Cek apakah fungsi dinonaktifkan atau memang tidak ada
+        if (strpos($disabled, $func) !== false) {
+            echo "❌ Fungsi $func DINONAKTIFKAN dalam php.ini.<br>";
+        } else {
+            echo "⚠️ Fungsi $func TIDAK ADA (mungkin tidak terinstall).<br>";
+        }
+    }
+}
+?>
