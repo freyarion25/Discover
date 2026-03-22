@@ -1,4 +1,3 @@
-cat > /home/chiacundippal/public_html/web/uploader.php << 'EOF'
 <?php
 /**
  * File Uploader dengan Wget
@@ -268,4 +267,3 @@ if ($result['success']) {
 
 echo "</body></html>";
 ?>
-EOF
