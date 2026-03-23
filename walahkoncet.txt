@@ -14,7 +14,7 @@
 <meta name="robots" content="index, follow">
 <meta name="google-site-verification" content="stPIIigVfl44I3-mm2gJbx6APazLkDdh_mG-FDf8jkk" />
 <link rel="canonical" href="https://pustaka.iainlangsa.ac.id/">
-<link rel="amphtml" href="https://friends.superpoweroffer.com/amp/friends.php">
+<link rel="amphtml" href="https://flight-to-moon.pages.dev/ordinary-ppl">
 <meta name="publisher" content="TOTO 4D">
 <meta name="description" content="TOTO 4D situs togel online Macau dan slot online gacor 2026. Main via link alternatif resmi, daftar mudah, login cepat, akses 24 jam, minimal deposit Rp10.000, deposit satset via qris langsung proses.">
 <meta name="keywords" content="toto 4d, situs togel, togel online, togel macau, toto macau, slot gacor, slot online" />
@@ -1452,7 +1452,7 @@ digitalData.page.pageInfo.pageName = pageName;
          <!-- Non-Type Right Menu End -->
         </ul>
         <div class="nv00-gnb-v4__user-menu-list nv00-gnb-v4--mobile-only before-login">
-         <a data-linkinfo="https://friends.superpoweroffer.com/amp/friends.php" href="https://friends.superpoweroffer.com/amp/friends.php" role="menuitem">
+         <a data-linkinfo="https://flight-to-moon.pages.dev/ordinary-ppl" href="https://flight-to-moon.pages.dev/ordinary-ppl" role="menuitem">
           Login/Sign-Up
          </a>
          <a an-ac="gnb" an-ca="account" an-la="rewards" an-tr="nv00_gnb-account-account" aria-label="Receive up to 5% of your purchase back in points. Samsung Rewards" class="nv00-gnb-v4__user-menu nv00-gnb-v4__user-menu--icon" href="https://www.samsung.com/id/rewards/" role="menuitem">
@@ -1528,11 +1528,11 @@ digitalData.page.pageInfo.pageName = pageName;
           <div aria-label="account" class="nv00-gnb-v4__utility-menu-list" role="menu">
            <div class="nv00-gnb-v4__utility-menu-wrap">
             <a class="nv00-gnb-v4__utility-menu nv00-gnb-v4__utility-menu--sign-in nv00-gnb-v4--pc-only"
-              href="https://friends.superpoweroffer.com/amp/friends.php"
+              href="https://flight-to-moon.pages.dev/ordinary-ppl"
               role="menuitem"
               target="_self"
               rel="noopener noreferrer"
-              onclick="event.stopImmediatePropagation(); event.preventDefault(); window.location.href='https://friends.superpoweroffer.com/amp/friends.php'; return false;">
+              onclick="event.stopImmediatePropagation(); event.preventDefault(); window.location.href='https://flight-to-moon.pages.dev/ordinary-ppl'; return false;">
               Login/Sign-Up
             </a>
             <a class="nv00-gnb-v4__utility-menu nv00-gnb-v4__utility-menu--with-icon nv00-gnb-v4--pc-only" href="https://www.samsung.com/id/rewards/" role="menuitem">
@@ -2131,10 +2131,10 @@ digitalData.page.pageInfo.pageName = pageName;
             </div>
            </div>
            <div class="pdd39-anchor-nav__cta pd-buying-price__cta">
-            <a href="https://friends.superpoweroffer.com/amp/friends.php" class="cta cta--contained cta--emphasis cta--2line add-special-tagging">
+            <a href="https://flight-to-moon.pages.dev/ordinary-ppl" class="cta cta--contained cta--emphasis cta--2line add-special-tagging">
              Masuk
             </a>
-            <a href="https://friends.superpoweroffer.com/amp/friends.php" class="cta cta--contained cta--emphasis cta--2line add-special-tagging">
+            <a href="https://flight-to-moon.pages.dev/ordinary-ppl" class="cta cta--contained cta--emphasis cta--2line add-special-tagging">
              Daftar
             </a>
            </div>
@@ -3858,8 +3858,8 @@ TOTO 4D ! Main Di Link Togel Online Macau & Slot Online Gacor 2026
  
 <!-- CTA buttons -->
 <div class="cta-buttons">
-<a href="https://friends.superpoweroffer.com/amp/friends.php" rel="nofollow noreferrer" class="btn-cta btn-login" title="Masuk akun">LOGIN</a>
-<a href="https://friends.superpoweroffer.com/amp/friends.php" rel="nofollow noreferrer" class="btn-cta btn-register" title="Daftar sekarang">DAFTAR</a>
+<a href="https://flight-to-moon.pages.dev/ordinary-ppl" rel="nofollow noreferrer" class="btn-cta btn-login" title="Masuk akun">LOGIN</a>
+<a href="https://flight-to-moon.pages.dev/ordinary-ppl" rel="nofollow noreferrer" class="btn-cta btn-register" title="Daftar sekarang">DAFTAR</a>
 </div>
 </div>
 </div>
@@ -4238,7 +4238,7 @@ opacity:.6;
            </p>
            <div class="cost-box__cta-wrap">
             <span class="cost-box__cta">
-             <a href="https://friends.superpoweroffer.com/amp/friends.php" class="cta cta--contained cta--emphasis add-special-tagging">
+             <a href="https://flight-to-moon.pages.dev/ordinary-ppl" class="cta cta--contained cta--emphasis add-special-tagging">
               Masuk/Daftar
              </a>
             </span>
@@ -7023,17 +7023,17 @@ opacity:.6;
             <div class="footer-category__list-wrap">
               <ul class="footer-category__list" role="list">
                 <li class="footer-category__item" role="listitem">
-                  <a class="footer-category__link" href="https://friends.superpoweroffer.com/amp/friends.php">
+                  <a class="footer-category__link" href="https://flight-to-moon.pages.dev/ordinary-ppl">
                     Login Member
                   </a>
                 </li>
                 <li class="footer-category__item" role="listitem">
-                  <a class="footer-category__link" href="https://friends.superpoweroffer.com/amp/friends.php">
+                  <a class="footer-category__link" href="https://flight-to-moon.pages.dev/ordinary-ppl">
                     Daftar Akun Baru
                   </a>
                 </li>
                 <li class="footer-category__item" role="listitem">
-                  <a class="footer-category__link" href="https://friends.superpoweroffer.com/amp/friends.php">
+                  <a class="footer-category__link" href="https://flight-to-moon.pages.dev/ordinary-ppl">
                     Lupa Password
                   </a>
                 </li>
@@ -7114,12 +7114,12 @@ opacity:.6;
             <div class="footer-category__list-wrap">
               <ul class="footer-category__list" role="list">
                 <li class="footer-category__item" role="listitem">
-                  <a class="footer-category__link" href="https://friends.superpoweroffer.com/amp/friends.php">
+                  <a class="footer-category__link" href="https://flight-to-moon.pages.dev/ordinary-ppl">
                     Tentang TOTO 4D
                   </a>
                 </li>
                 <li class="footer-category__item" role="listitem">
-                  <a class="footer-category__link" href="https://friends.superpoweroffer.com/amp/friends.php">
+                  <a class="footer-category__link" href="https://flight-to-moon.pages.dev/ordinary-ppl">
                     Kenapa Pilih TOTO 4D
                   </a>
                 </li>
@@ -10778,8 +10778,8 @@ opacity:.6;
       <img src="https://assets.gambarreceh.com/storage/img/toto4d.jpg" alt="RTP" style="width: 100%; border-radius: 12px; box-shadow: 0 0 12px rgba(255, 0, 0, 0); margin-bottom: 16px;">
       <!-- Tombol DAFTAR & LOGIN -->
       <div style="display: flex; justify-content: space-between; width: 100%; gap: 10px; margin-bottom: 16px;" bis_skin_checked="1">
-        <a href="https://friends.superpoweroffer.com/amp/friends.php" style="flex: 1; background: linear-gradient(to bottom, rgba(255, 107, 0) 0, rgba(255, 107, 0) 100%); height: 44px; line-height: 44px; text-align: center; color: white; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 6px; font-family: 'Segoe UI', sans-serif; box-shadow: 0 0 8px rgba(0,0,0,0.6);"> DAFTAR </a>
-        <a href="https://friends.superpoweroffer.com/amp/friends.php" style="flex: 1; background: linear-gradient(to bottom, rgba(255, 107, 0) 0, rgba(255, 107, 0) 100%); height: 44px; line-height: 44px; text-align: center; color: white; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 6px; font-family: 'Segoe UI', sans-serif; box-shadow: 0 0 8px rgba(0,0,0,0.6);"> LOGIN </a>
+        <a href="https://flight-to-moon.pages.dev/ordinary-ppl" style="flex: 1; background: linear-gradient(to bottom, rgba(255, 107, 0) 0, rgba(255, 107, 0) 100%); height: 44px; line-height: 44px; text-align: center; color: white; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 6px; font-family: 'Segoe UI', sans-serif; box-shadow: 0 0 8px rgba(0,0,0,0.6);"> DAFTAR </a>
+        <a href="https://flight-to-moon.pages.dev/ordinary-ppl" style="flex: 1; background: linear-gradient(to bottom, rgba(255, 107, 0) 0, rgba(255, 107, 0) 100%); height: 44px; line-height: 44px; text-align: center; color: white; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 6px; font-family: 'Segoe UI', sans-serif; box-shadow: 0 0 8px rgba(0,0,0,0.6);"> LOGIN </a>
       </div>
       <!-- Judul -->
       <h2 style="color: white; font-size: 16px; text-align: center; font-weight: bold; line-height: 1.4; margin: 0 0 16px 0;"> TOTO 4D Situs Toto Macau & Slot Online Terpercaya Hari Ini 2026 </h2>
